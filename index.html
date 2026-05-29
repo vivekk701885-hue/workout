@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APEX.FIT // Premium Workout Architecture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .dark .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.45);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+        }
+        .dark .glass-card {
+            background: rgba(30, 41, 59, 0.45);
+            border: 1px solid rgba(51, 65, 85, 0.3);
+        }
+        /* Custom Scrollbar for sleek UI */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 min-h-screen transition-colors duration-300 antialiased font-sans">
+
+    <div class="min-h-screen flex flex-col md:flex-row">
+        
+        <aside class="hidden md:flex flex-col w-64 glass-panel fixed h-screen z-20 px-4 py-6 justify-between shadow-xl">
+            <div>
+                <div class="flex items-center justify-between px-2 mb-8">
+                    <span class="text-xl font-black tracking-wider bg-gradient-to-r from-brand-500 to-purple-500 bg-clip-text text-transparent">
+                        APEX.FIT
+                    </span>
+                    <div class="flex items-center gap-1 bg-amber-500/10 text-amber-500 font-bold px-2 py-1 rounded-full text-xs">
+                        <i data-lucide="flame" class="w-3.5 h-3.5 fill-amber-500"></i>
+                        <span id="desktop-streak-counter">0d</span>
+                    </div>
+                </div>
+
+                <nav class="space-y-1">
+                    <button onclick="switchPage('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium bg-brand-500 text-white shadow-lg shadow-brand-500/20">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+                    </button>
+                    <button onclick="switchPage('history')" id="nav-history" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <i data-lucide="calendar" class="w-5 h-5"></i> History
+                    </button>
+                    <button onclick="switchPage('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <i data-lucide="settings" class="w-5 h-5"></i> Settings
+                    </button>
+                </nav>
+            </div>
+
+            <button onclick="toggleTheme()" class="flex items-center justify-between w-full px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 font-medium transition-colors">
+                <span class="text-sm">Appearance</span>
+                <span id="theme-icon-slot"><i data-lucide="sun" class="text-amber-400 w-5 h-5"></i></span>
+            </button>
+        </aside>
+
+        <header class="md:hidden flex items-center justify-between p-4 bg-white/80 dark:bg-slate-900/80 sticky top-0 backdrop-blur-md z-40 border-b border-slate-200/50 dark:border-slate-800/50">
+            <span class="text-lg font-black bg-gradient-to-r from-brand-500 to-purple-500 bg-clip-text text-transparent">APEX.FIT</span>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1 bg-amber-500/10 text-amber-500 font-bold px-2 py-0.5 rounded-full text-xs">
+                    <i data-lucide="flame" class="w-3 h-3 fill-amber-500"></i>
+                    <span id="mobile-streak-counter">0d</span>
+                </div>
+                <button onclick="toggleTheme()" class="p-1 text-slate-500 dark:text-slate-400">
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-amber-400"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 md:pl-64 min-h-screen pb-24 md:pb-8">
+            <div class="p-4 md:p-8 max-w-7xl mx-auto w-full">
+                
+                <section id="page-dashboard" class="space-y-8 block">
+                    <div>
+                        <h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Fitness Dashboard</h1>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Review metrics and log variations across this week's structure.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="glass-panel p-4 rounded-2xl flex items-center gap-4 shadow-sm">
+                            <div class="p-3 rounded-xl text-brand-500 bg-brand-500/10"><i data-lucide="dumbbell"></i></div>
+                            <div>
+                                <span class="text-xs text-slate-400 dark:text-slate-500 block font-medium">Estimated Volume</span>
+                                <span id="dash-stat-volume" class="text-xl font-bold text-slate-900 dark:text-white mt-0.5 block">0 kg</span>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-2xl flex items-center gap-4 shadow-sm">
+                            <div class="p-3 rounded-xl text-purple-500 bg-purple-500/10"><i data-lucide="layers"></i></div>
+                            <div>
+                                <span class="text-xs text-slate-400 dark:text-slate-500 block font-medium">Total Sets Executed</span>
+                                <span id="dash-stat-sets" class="text-xl font-bold text-slate-900 dark:text-white mt-0.5 block">0</span>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-2xl flex items-center gap-4 shadow-sm">
+                            <div class="p-3 rounded-xl text-amber-500 bg-amber-500/10"><i data-lucide="flame"></i></div>
+                            <div>
+                                <span class="text-xs text-slate-400 dark:text-slate-500 block font-medium">Active Streak</span>
+                                <span id="dash-stat-streak" class="text-xl font-bold text-slate-900 dark:text-white mt-0.5 block">0 Days</span>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-2xl flex items-center gap-4 shadow-sm">
+                            <div class="p-3 rounded-xl text-emerald-500 bg-emerald-500/10"><i data-lucide="award"></i></div>
+                            <div>
+                                <span class="text-xs text-slate-400 dark:text-slate-500 block font-medium">Record Streak</span>
+                                <span id="dash-stat-longest" class="text-xl font-bold text-slate-900 dark:text-white mt-0.5 block">0 Days</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="week-cards-container">
+                        </div>
+                </section>
+
+                <section id="page-history" class="space-y-6 hidden">
+                    <div>
+                        <h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Workout History Logs</h1>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Query and view historic data sets across previous training calendars.</p>
+                    </div>
+
+                    <div class="relative max-w-md">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5"></i>
+                        <input
+                            type="text"
+                            id="history-search-input"
+                            oninput="renderHistoryPage()"
+                            placeholder="Search by exercise name..."
+                            class="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm shadow-sm"
+                        />
+                    </div>
+
+                    <div class="space-y-4" id="history-logs-container">
+                        </div>
+                </section>
+
+                <section id="page-settings" class="space-y-6 max-w-2xl hidden">
+                    <div>
+                        <h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">System Settings</h1>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage localized preferences, import sequences, and system resets.</p>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl divide-y divide-slate-200/50 dark:divide-slate-800/50 overflow-hidden shadow-md">
+                        <div class="p-5 space-y-4">
+                            <div>
+                                <h3 class="font-bold text-slate-900 dark:text-white text-sm">Data Portability</h3>
+                                <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Export current local engine parameters or load backup variations into tracking configurations.</p>
+                            </div>
+                            <div class="flex flex-wrap gap-3">
+                                <button onclick="exportApplicationState()" class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                    <i data-lucide="download" class="w-4 h-4"></i> Export Backup Configuration
+                                </button>
+                                <button onclick="triggerImportSelection()" class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                    <i data-lucide="upload" class="w-4 h-4"></i> Load Backup Blueprint
+                                </button>
+                                <input type="file" id="hidden-file-input" class="hidden" accept=".json" onchange="handleImportState(event)" />
+                            </div>
+                        </div>
+
+                        <div class="p-5 space-y-4 bg-rose-500/5">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 text-rose-500 bg-rose-500/10 rounded-xl"><i data-lucide="shield-alert" class="w-5 h-5"></i></div>
+                                <div>
+                                    <h3 class="font-bold text-rose-500 text-sm">Danger Zone</h3>
+                                    <p class="text-xs text-rose-400/80 dark:text-rose-500/70 mt-0.5">Wipes local workout storage indexes and active streak telemetry counters forever.</p>
+                                </div>
+                            </div>
+                            <button onclick="purgeStorageEngine()" class="flex items-center gap-2 px-4 py-2 bg-rose-500 text-white text-xs font-semibold rounded-xl hover:bg-rose-600 transition-colors shadow-md shadow-rose-500/10">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i> Purge App Storage Cache
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-200/50 dark:border-slate-800/50 px-2 py-2 flex justify-around z-50 shadow-2xl">
+            <button onclick="switchPage('dashboard')" id="mobile-nav-dashboard" class="flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-medium text-brand-500">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> <span>Dashboard</span>
+            </button>
+            <button onclick="switchPage('history')" id="mobile-nav-history" class="flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-medium text-slate-400 dark:text-slate-500">
+                <i data-lucide="calendar" class="w-5 h-5"></i> <span>History</span>
+            </button>
+            <button onclick="switchPage('settings')" id="mobile-nav-settings" class="flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-medium text-slate-400 dark:text-slate-500">
+                <i data-lucide="settings" class="w-5 h-5"></i> <span>Settings</span>
+            </button>
+        </nav>
+    </div>
+
+    <div id="confirmation-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="w-full max-w-sm glass-panel p-6 rounded-2xl relative z-10 shadow-2xl scale-95 transition-transform duration-200">
+            <div class="flex items-center gap-3 text-rose-500 mb-4">
+                <div class="p-2 bg-rose-500/10 rounded-xl"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white">Delete Entry?</h3>
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mb-6 leading-relaxed">Are you sure you want to completely delete this target entry and all associated data subsets permanently?</p>
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeModal()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800">Cancel</button>
+                <button id="modal-confirm-btn" class="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold shadow-lg shadow-rose-500/20">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Core Static Configurations
+        const EXERCISE_SUGGESTIONS = ["Bench Press", "Squats", "Deadlift", "Biceps Curl", "Shoulder Press", "Pull-ups", "Leg Press", "Lying Leg Curls"];
+        const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        
+        // Context Memory Core
+        let workouts = JSON.parse(localStorage.getItem('premium_workouts')) || {};
+        let activePage = 'dashboard';
+        let currentModalAction = null;
+
+        // Establish Fixed ISO week context configuration bounds
+        function getMondayOfCurrentWeek() {
+            const d = new Date();
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff)).toISOString().split('T')[0];
+        }
+        const activeWeekStart = getMondayOfCurrentWeek();
+
+        function getWeekDaysArray() {
+            const days = [];
+            const start = new Date(activeWeekStart);
+            for (let i = 0; i < 7; i++) {
+                const targetDate = new Date(start);
+                targetDate.setDate(start.getDate() + i);
+                days.push({
+                    name: DAY_NAMES[i],
+                    dateStr: targetDate.toISOString().split('T')[0],
+                    isRestDay: DAY_NAMES[i] === 'Sunday'
+                });
+            }
+            return days;
+        }
+
+        // State Save Hook
+        function syncStorageEngine() {
+            localStorage.setItem('premium_workouts', JSON.stringify(workouts));
+            calculateStreakTelemetry();
+            calculateDashboardSummaryMetrics();
+        }
+
+        // Calculations & Matrix Quantities
+        function calculateStreakTelemetry() {
+            const completedDates = Object.keys(workouts).filter(date => {
+                return Object.values(workouts[date]).some(ex => ex.sets && ex.sets.length > 0);
+            }).sort();
+
+            let currentStreak = 0;
+            let longestStreak = 0;
+            
+            if (completedDates.length > 0) {
+                let tempStreak = 0;
+                let uniqueDays = [...new Set(completedDates)];
+                
+                for(let i=0; i<uniqueDays.length; i++) {
+                    if(i === 0) { tempStreak = 1; }
+                    else {
+                        const diff = Math.ceil(Math.abs(new Date(uniqueDays[i]) - new Date(uniqueDays[i-1])) / 86400000);
+                        if(diff === 1) tempStreak++;
+                        else if(diff > 1) {
+                            if(tempStreak > longestStreak) longestStreak = tempStreak;
+                            tempStreak = 1;
+                        }
+                    }
+                }
+                if(tempStreak > longestStreak) longestStreak = tempStreak;
+
+                const todayStr = new Date().toISOString().split('T')[0];
+                const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+                if(uniqueDays.includes(todayStr) || uniqueDays.includes(yesterdayStr)) {
+                    let idx = uniqueDays.length - 1;
+                    currentStreak = 1;
+                    while(idx > 0) {
+                        const diff = Math.ceil(Math.abs(new Date(uniqueDays[idx]) - new Date(uniqueDays[idx-1])) / 86400000);
+                        if(diff === 1) { currentStreak++; idx--; }
+                        else break;
+                    }
+                }
+            }
+
+            const maxStreak = Math.max(longestStreak, currentStreak);
+            document.getElementById('desktop-streak-counter').innerText = `${currentStreak}d`;
+            document.getElementById('mobile-streak-counter').innerText = `${currentStreak}d`;
+            document.getElementById('dash-stat-streak').innerText = `${currentStreak} Days`;
+            document.getElementById('dash-stat-longest').innerText = `${maxStreak} Days`;
+        }
+
+        function calculateDashboardSummaryMetrics() {
+            let totalVolume = 0;
+            let totalSets = 0;
+            const currentWeekDays = getWeekDaysArray();
+
+            currentWeekDays.forEach(day => {
+                const dayExercises = Object.values(workouts[day.dateStr] || {});
+                dayExercises.forEach(ex => {
+                    totalSets += ex.sets?.length || 0;
+                    ex.sets?.forEach(set => {
+                        const r = parseFloat(set.reps) || 0;
+                        const w = parseFloat(set.weight) || 0;
+                        totalVolume += (r * w);
+                    });
+                });
+            });
+
+            document.getElementById('dash-stat-volume').innerText = `${totalVolume.toLocaleString()} kg`;
+            document.getElementById('dash-stat-sets').innerText = totalSets;
+        }
+
+        // View Router Switching Engine
+        function switchPage(pageTarget) {
+            activePage = pageTarget;
+            ['dashboard', 'history', 'settings'].forEach(p => {
+                document.getElementById(`page-${p}`).style.display = p === pageTarget ? 'block' : 'none';
+                
+                // Active Desktop Nav UI updates
+                const dNav = document.getElementById(`nav-${p}`);
+                if(p === pageTarget) {
+                    dNav.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium bg-brand-500 text-white shadow-lg shadow-brand-500/20";
+                } else {
+                    dNav.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800";
+                }
+
+                // Active Mobile Nav UI updates
+                const mNav = document.getElementById(`mobile-nav-${p}`);
+                if(p === pageTarget) {
+                    mNav.className = "flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-medium text-brand-500";
+                } else {
+                    mNav.className = "flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-medium text-slate-400 dark:text-slate-500";
+                }
+            });
+
+            if(pageTarget === 'dashboard') renderDashboardWeek();
+            if(pageTarget === 'history') renderHistoryPage();
+            lucide.createIcons();
+        }
+
+        // Theme Toggle Core
+        function toggleTheme() {
+            const html = document.documentElement;
+            if(html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                document.getElementById('theme-icon-slot').innerHTML = `<i data-lucide="moon" class="w-5 h-5 text-slate-600"></i>`;
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                document.getElementById('theme-icon-slot').innerHTML = `<i data-lucide="sun" class="w-5 h-5 text-amber-400"></i>`;
+                localStorage.setItem('theme', 'dark');
+            }
+            lucide.createIcons();
+        }
+
+        // Render Layer: Dashboard Weekly Split Cards
+        function renderDashboardWeek() {
+            const container = document.getElementById('week-cards-container');
+            container.innerHTML = '';
+            const currentWeekDays = getWeekDaysArray();
+
+            currentWeekDays.forEach(day => {
+                const dayExercises = Object.values(workouts[day.dateStr] || {});
+                let exercisesHTML = '';
+
+                if (day.isRestDay && dayExercises.length === 0) {
+                    exercisesHTML = `
+                        <div class="glass-card rounded-2xl p-6 border-dashed border-2 border-slate-200 dark:border-slate-800 text-center flex flex-col items-center justify-center min-h-[180px]">
+                            <div class="w-10 h-10 rounded-full bg-brand-500/10 flex items-center justify-center text-brand-500 mb-2 font-semibold">💤</div>
+                            <h3 class="font-bold text-slate-700 dark:text-slate-300 text-sm">${day.name}</h3>
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Scheduled Rest & Recovery.</p>
+                            <button onclick="addExerciseToDay('${day.dateStr}')" class="mt-3 text-xs font-semibold text-brand-500 hover:underline flex items-center gap-0.5">
+                                <i data-lucide="plus" class="w-3 h-3"></i> Break Rest Day
+                            </button>
+                        </div>`;
+                } else {
+                    let exercisesListHTML = '';
+                    dayExercises.forEach(ex => {
+                        let setsRowsHTML = '';
+                        (ex.sets || []).forEach((set, sIdx) => {
+                            setsRowsHTML += `
+                                <div class="grid grid-cols-12 gap-1 items-center">
+                                    <div class="col-span-2 text-center text-xs font-bold text-slate-400">${sIdx + 1}</div>
+                                    <input type="number" placeholder="Reps" value="${set.reps || ''}" oninput="updateSetData('${day.dateStr}', '${ex.id}', ${sIdx}, 'reps', this.value)" class="col-span-4 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-brand-500 outline-none" />
+                                    <input type="number" placeholder="kg" value="${set.weight || ''}" oninput="updateSetData('${day.dateStr}', '${ex.id}', ${sIdx}, 'weight', this.value)" class="col-span-4 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-brand-500 outline-none" />
+                                    <div class="col-span-2 text-center">
+                                        <button onclick="promptDeleteSet('${day.dateStr}', '${ex.id}', ${sIdx})" class="text-slate-300 dark:text-slate-700 hover:text-rose-500 text-sm">×</button>
+                                    </div>
+                                </div>`;
+                        });
+
+                        exercisesListHTML += `
+                            <div class="p-3 bg-slate-50/50 dark:bg-slate-950/30 rounded-xl border border-slate-200/30 dark:border-slate-800/30 relative group space-y-2">
+                                <div class="flex items-start justify-between gap-1">
+                                    <div class="flex-1 relative">
+                                        <input type="text" value="${ex.name || ''}" placeholder="Exercise Name" oninput="updateExerciseName('${day.dateStr}', '${ex.id}', this.value)" onfocus="showAutocomplete(this, '${day.dateStr}', '${ex.id}')" class="w-full bg-transparent font-bold border-none text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none text-sm" />
+                                        <div class="autocomplete-dropdown absolute left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-h-32 overflow-y-auto hidden z-50 text-xs"></div>
+                                    </div>
+                                    <button onclick="promptDeleteExercise('${day.dateStr}', '${ex.id}')" class="text-slate-400 hover:text-rose-500 p-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-1">
+                                    ${ex.sets?.length > 0 ? `
+                                    <div class="grid grid-cols-12 gap-1 px-1 text-[9px] uppercase font-bold tracking-wider text-slate-400">
+                                        <div class="col-span-2 text-center">Set</div>
+                                        <div class="col-span-4 text-center">Reps</div>
+                                        <div class="col-span-4 text-center">Weight</div>
+                                        <div class="col-span-2"></div>
+                                    </div>` : ''}
+                                    ${setsRowsHTML}
+                                </div>
+
+                                <button onclick="addSetToExercise('${day.dateStr}', '${ex.id}')" class="w-full border border-dashed border-slate-200 dark:border-slate-800 py-1 text-[11px] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg flex items-center justify-center gap-1 transition-colors font-medium">
+                                    <i data-lucide="plus" class="w-3 h-3"></i> Add Set
+                                </button>
+                            </div>`;
+                    });
+
+                    exercisesHTML = `
+                        <div class="glass-panel rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
+                            <div>
+                                <div class="p-4 bg-slate-100/50 dark:bg-slate-900/50 flex items-center justify-between border-b border-slate-200/50 dark:border-slate-800/50">
+                                    <div>
+                                        <h3 class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-1.5">${day.name}</h3>
+                                        <p class="text-[10px] text-slate-400 dark:text-slate-500">${new Date(day.dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <button onclick="clonePreviousDay('${day.dateStr}')" title="Copy previous day parameters" class="p-1.5 text-slate-400 hover:text-brand-500 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"><i data-lucide="copy" class="w-4 h-4"></i></button>
+                                        <button onclick="addExerciseToDay('${day.dateStr}')" class="p-1.5 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors shadow-sm shadow-brand-500/10"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                                    </div>
+                                </div>
+                                <div class="p-3 space-y-3">${exercisesListHTML || '<p class="text-center text-xs py-8 text-slate-300 dark:text-slate-700 font-medium">No exercises logged.</p>'}</div>
+                            </div>
+                        </div>`;
+                }
+
+                container.innerHTML += exercisesHTML;
+            });
+            lucide.createIcons();
+        }
+
+        // Render Layer: History View
+        function renderHistoryPage() {
+            const container = document.getElementById('history-logs-container');
+            const searchVal = document.getElementById('history-search-input').value.toLowerCase();
+            container.innerHTML = '';
+
+            const activeDates = Object.keys(workouts).sort((a,b) => new Date(b) - new Date(a));
+            let matchesFound = 0;
+
+            activeDates.forEach(date => {
+                const dayExercises = Object.values(workouts[date] || {});
+                if(dayExercises.length === 0) return;
+
+                // Match verification mapping
+                const matchesSearch = date.includes(searchVal) || dayExercises.some(ex => ex.name?.toLowerCase().includes(searchVal));
+                if(!matchesSearch) return;
+                matchesFound++;
+
+                let labelsHTML = '';
+                let aggregateSetsCount = 0;
+                dayExercises.forEach(ex => {
+                    aggregateSetsCount += ex.sets?.length || 0;
+                    labelsHTML += `<span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-medium px-2.5 py-1 rounded-lg border border-slate-200/30 dark:border-slate-700/30">${ex.name || 'Unnamed Movement'} <b class="text-brand-500 ml-0.5">x${ex.sets?.length || 0}</b></span>`;
+                });
+
+                container.innerHTML += `
+                    <div class="glass-panel p-5 rounded-2xl flex flex-col md:flex-row md:items-start justify-between gap-4 shadow-sm">
+                        <div class="flex items-start gap-4">
+                            <div class="p-3 bg-brand-500/10 text-brand-500 rounded-xl hidden sm:block"><i data-lucide="calendar-days" class="w-5 h-5"></i></div>
+                            <div class="space-y-2">
+                                <h3 class="font-bold text-slate-900 dark:text-white text-sm">${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
+                                <div class="flex flex-wrap gap-1.5">${labelsHTML}</div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl min-w-[140px] text-xs space-y-1 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-slate-800/50">
+                            <div>Distinct Movements: <span class="font-bold text-slate-800 dark:text-slate-200">${dayExercises.length}</span></div>
+                            <div>Logged Sets Total: <span class="font-bold text-slate-800 dark:text-slate-200">${aggregateSetsCount}</span></div>
+                        </div>
+                    </div>`;
+            });
+
+            if(matchesFound === 0) {
+                container.innerHTML = `<div class="glass-panel rounded-2xl p-8 text-center text-xs font-semibold text-slate-400 dark:text-slate-600">No workout sessions match your criteria.</div>`;
+            }
+            lucide.createIcons();
+        }
+
+        // Mutators: Exercise Controls
+        function addExerciseToDay(dateStr) {
+            if(!workouts[dateStr]) workouts[dateStr] = {};
+            const id = 'ex_' + Date.now();
+            workouts[dateStr][id] = { id, name: '', sets: [] };
+            syncStorageEngine();
+            renderDashboardWeek();
+        }
+
+        function updateExerciseName(dateStr, exId, value) {
+            if(workouts[dateStr]?.[exId]) {
+                workouts[dateStr][exId].name = value;
+                localStorage.setItem('premium_workouts', JSON.stringify(workouts));
+                calculateDashboardSummaryMetrics();
+            }
+        }
+
+        function addSetToExercise(dateStr, exId) {
+            const ex = workouts[dateStr]?.[exId];
+            if(ex) {
+                if(!ex.sets) ex.sets = [];
+                ex.sets.push({ reps: '', weight: '' });
+                syncStorageEngine();
+                renderDashboardWeek();
+            }
+        }
+
+        function updateSetData(dateStr, exId, sIdx, field, value) {
+            const set = workouts[dateStr]?.[exId]?.sets?.[sIdx];
+            if(set) {
+                set[field] = value;
+                syncStorageEngine();
+            }
+        }
+
+        function clonePreviousDay(targetDate) {
+            const targetTime = new Date(targetDate).getTime();
+            const yesterdayStr = new Date(targetTime - 86400000).toISOString().split('T')[0];
+            if(workouts[yesterdayStr]) {
+                workouts[targetDate] = JSON.parse(JSON.stringify(workouts[yesterdayStr]));
+                // Regenerate uniquely random key structures to isolate execution trees
+                Object.values(workouts[targetDate]).forEach(ex => {
+                    const newId = 'ex_' + Math.random().toString(36).substr(2, 9);
+                    workouts[targetDate][newId] = { ...ex, id: newId };
+                    delete workouts[targetDate][ex.id];
+                });
+                syncStorageEngine();
+                renderDashboardWeek();
+            } else {
+                alert("No logged parameters discovered across the preceding yesterday block.");
+            }
+        }
+
+        // Custom Contextual Autocomplete Handling
+        function showAutocomplete(inputEl, dateStr, exId) {
+            const dropdown = inputEl.nextElementSibling;
+            const value = inputEl.value.toLowerCase();
+            
+            const matches = EXERCISE_SUGGESTIONS.filter(item => item.toLowerCase().includes(value));
+            if(matches.length === 0) { dropdown.classList.add('hidden'); return; }
+
+            dropdown.innerHTML = '';
+            matches.forEach(m => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-medium";
+                btn.innerText = m;
+                // Use triggers running faster than blur triggers
+                btn.onmousedown = () => {
+                    inputEl.value = m;
+                    updateExerciseName(dateStr, exId, m);
+                    dropdown.classList.add('hidden');
+                    renderDashboardWeek();
+                };
+                dropdown.appendChild(btn);
+            });
+            dropdown.classList.remove('hidden');
+
+            inputEl.onblur = () => setTimeout(() => dropdown.classList.add('hidden'), 180);
+        }
+
+        // Deletion Prompt Modals Execution Management
+        function openModal(confirmAction) {
+            currentModalAction = confirmAction;
+            const modal = document.getElementById('confirmation-modal');
+            modal.classList.remove('hidden');
+            modal.firstElementChild.nextElementSibling.classList.remove('scale-95');
+            modal.firstElementChild.nextElementSibling.classList.add('scale-100');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('confirmation-modal');
+            modal.firstElementChild.nextElementSibling.classList.remove('scale-100');
+            modal.firstElementChild.nextElementSibling.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 100);
+            currentModalAction = null;
+        }
+
+        document.getElementById('modal-confirm-btn').onclick = () => {
+            if(currentModalAction) { currentModalAction(); syncStorageEngine(); renderDashboardWeek(); }
+            closeModal();
+        };
+
+        function promptDeleteExercise(dateStr, exId) {
+            openModal(() => { delete workouts[dateStr][exId]; });
+        }
+
+        function promptDeleteSet(dateStr, exId, sIdx) {
+            openModal(() => { workouts[dateStr][exId].sets.splice(sIdx, 1); });
+        }
+
+        // Systems Administration Settings Layer Actions
+        function exportApplicationState() {
+            const blobStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(workouts, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", blobStr);
+            dlAnchor.setAttribute("download", `apex_fit_backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+        }
+
+        function triggerImportSelection() {
+            document.getElementById('hidden-file-input').click();
+        }
+
+        function handleImportState(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    workouts = { ...workouts, ...parsed };
+                    syncStorageEngine();
+                    alert("System configuration integrated seamlessly.");
+                    if(activePage === 'dashboard') renderDashboardWeek();
+                } catch(err) {
+                    alert("Failure parsing backup profile formatting parameters.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function purgeStorageEngine() {
+            if(confirm("CRITICAL WARNING: Wipe out all structured session histories? This action is absolute and irreversible.")) {
+                workouts = {};
+                localStorage.removeItem('premium_workouts');
+                window.location.reload();
+            }
+        }
+
+        // System Initialization Boot Sequence Pipeline
+        (function initApp() {
+            // Theme Validation Checking
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-icon-slot').innerHTML = `<i data-lucide="moon" class="w-5 h-5 text-slate-600"></i>`;
+            }
+            // Execute structural layouts renders
+            syncStorageEngine();
+            renderDashboardWeek();
+        })();
+    </script>
+</body>
+</html>
